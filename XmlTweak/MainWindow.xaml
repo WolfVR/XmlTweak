@@ -11,21 +11,21 @@
         <GroupBox x:Name="gbSource" Header="Source XML" Margin="10,10,10,0" Height="61" VerticalAlignment="Top" HorizontalAlignment="Left" Width="602">
             <Grid>
                 <Label Content="Path:" Margin="10,7,0,0" HorizontalAlignment="Left" RenderTransformOrigin="0.417,-1.61" VerticalAlignment="Top" Grid.IsSharedSizeScope="True" Height="26"/>
-                <TextBox x:Name="tbSourcePath" Margin="50,11,50,5" TextWrapping="Wrap" VerticalAlignment="Top" Height="22" Grid.IsSharedSizeScope="True" MinWidth="250"/>
+                <TextBox x:Name="tbSourcePath" Margin="50,11,50,5" TextWrapping="Wrap" VerticalAlignment="Top" Height="22" Grid.IsSharedSizeScope="True" IsEnabled="False"/>
                 <Button x:Name="btnSourceBrowse" Content="..." HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="35" FontSize="20" FontWeight="Bold" VerticalContentAlignment="Center" Padding="1,-10,1,1" Grid.IsSharedSizeScope="True" Height="23" Click="BtnSourceBrowse_Click"/>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="gbDestination" Header="Destination" Margin="10,76,10,0" VerticalAlignment="Top" Height="75" HorizontalAlignment="Left" Width="602">
             <Grid>
-                <Label x:Name="lblDestinationPath" Content="Path:" Margin="10,7,0,0" HorizontalAlignment="Left" RenderTransformOrigin="0.417,-1.61" VerticalAlignment="Bottom" Grid.IsSharedSizeScope="True" Height="26" IsEnabled="False"/>
-                <TextBox x:Name="tbDestinationPath" Margin="50,11,50,0" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="22" Grid.IsSharedSizeScope="True" MinWidth="250" IsEnabled="False"/>
-                <Button x:Name="btnDestinationBrowse" Content="..." HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Bottom" Width="35" FontSize="20" FontWeight="Bold" VerticalContentAlignment="Center" Padding="1,-10,1,1" Grid.IsSharedSizeScope="True" Height="23" Click="BtnDestinationBrowse_Click" IsEnabled="False"/>
-                <CheckBox x:Name="chkOverwrite" Content="Same as source" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" IsChecked="True" Click="ChkOverwrite_Click"/>
+                <Label x:Name="lblDestinationPath" Content="Path:" Margin="10,7,0,0" HorizontalAlignment="Left" RenderTransformOrigin="0.417,-1.61" VerticalAlignment="Bottom" Grid.IsSharedSizeScope="True" Height="26"/>
+                <TextBox x:Name="tbDestinationPath" Margin="50,11,50,0" TextWrapping="Wrap" VerticalAlignment="Bottom" Height="22" Grid.IsSharedSizeScope="True" Background="White" IsEnabled="False"/>
+                <Button x:Name="btnDestinationBrowse" Content="..." HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Bottom" Width="35" FontSize="20" FontWeight="Bold" VerticalContentAlignment="Center" Padding="1,-10,1,1" Grid.IsSharedSizeScope="True" Height="23" Click="BtnDestinationBrowse_Click"/>
+                <CheckBox x:Name="chkOverwrite" Content="Same as source" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="ChkOverwrite_Click"/>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="gbDisplay" Header="Preview" Margin="10,249,10,10">
             <Grid Margin="0">
-                <avalonedit:TextEditor SyntaxHighlighting="XML" x:Name="tbDisplayHighlight" Margin="0" FontSize="14" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+                <avalonedit:TextEditor SyntaxHighlighting="XML" x:Name="tbDisplayHighlight" Margin="0" FontSize="14" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Loaded="TbDisplayHighlight_Loaded" TextChanged="TbDisplayHighlight_TextChanged"/>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="gbSort" Header="Sort Options" Margin="10,156,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="300">
@@ -44,8 +44,8 @@
         </GroupBox>
         <GroupBox x:Name="gbAction" Header="Actions" HorizontalAlignment="Left" Height="88" Margin="502,156,10,0" VerticalAlignment="Top" Width="110">
             <Grid Margin="0">
-                <Button x:Name="btnTweak" Content="Tweak" HorizontalAlignment="Center" Margin="10,10,10,0" VerticalAlignment="Top" Width="75" IsEnabled="False"/>
-                <Button x:Name="btnSave" Content="Save" HorizontalAlignment="Center" Margin="10,36,10,0" VerticalAlignment="Top" Width="75" IsEnabled="False"/>
+                <Button x:Name="btnTweak" Content="Tweak" HorizontalAlignment="Center" Margin="10,10,10,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="BtnTweak_Click"/>
+                <Button x:Name="btnSave" Content="Save" HorizontalAlignment="Center" Margin="10,36,10,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="BtnSave_Click"/>
             </Grid>
         </GroupBox>
     </Grid>

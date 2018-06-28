@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 
 namespace XmlTweak
@@ -28,11 +29,24 @@ namespace XmlTweak
         private OpenFileDialog _openFileDialogInstance;
         private SaveFileDialog _saveFileDialogInstance;
         private XDocument _xdoc;
+        private FoldingManager _foldingManager;
+        private readonly XmlFoldingStrategy _foldingStrategy = new XmlFoldingStrategy();
 
 
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        #region Events
+        private void TbDisplayHighlight_Loaded(object sender, RoutedEventArgs e)
+        {
+            _foldingManager = FoldingManager.Install(tbDisplayHighlight.TextArea);
+        }
+
+        private void TbDisplayHighlight_TextChanged(object sender, EventArgs e)
+        {
+            _foldingStrategy.UpdateFoldings(_foldingManager, tbDisplayHighlight.Document);
         }
 
         private void BtnSourceBrowse_Click(object sender, RoutedEventArgs e)
@@ -44,7 +58,7 @@ namespace XmlTweak
                 {
                     try
                     {
-                        _xdoc = XDocument.Load(((OpenFileDialog) ofd).FileName, LoadOptions.PreserveWhitespace);
+                        _xdoc = XDocument.Load(((OpenFileDialog)ofd).FileName, LoadOptions.PreserveWhitespace);
                         args.Cancel = false;
                     }
                     catch
@@ -62,39 +76,66 @@ namespace XmlTweak
             if (chkOverwrite.IsChecked.GetValueOrDefault())
                 tbDestinationPath.Text = tbSourcePath.Text;
 
+
             // Get the attributes in the document and populate the combo box to use for sorting.
-            cbAttributes.ItemsSource =
-                new HashSet<string>(_xdoc.Descendants().Attributes().Where(xa => !xa.IsNamespaceDeclaration).Select(xa => xa.Name.LocalName));
+            var attributes = new HashSet<string>(_xdoc.Descendants().Attributes()
+                .Where(xa => !xa.IsNamespaceDeclaration).Select(xa => xa.Name.LocalName)).ToList();
+            attributes.Sort();
+            cbAttributes.ItemsSource = attributes;
 
             // Load the raw file into the syntax highlighter for display
             tbDisplayHighlight.Text = File.ReadAllText(tbSourcePath.Text);
+
+            btnTweak.IsEnabled = true;
+            btnSave.IsEnabled = !string.IsNullOrWhiteSpace(tbDestinationPath.Text);
         }
 
         private void BtnDestinationBrowse_Click(object sender, RoutedEventArgs e)
         {
-            if(_saveFileDialogInstance == null)
+            if (_saveFileDialogInstance == null)
                 _saveFileDialogInstance = new SaveFileDialog();
 
             if (_saveFileDialogInstance.ShowDialog().GetValueOrDefault())
+            {
                 tbDestinationPath.Text = _saveFileDialogInstance.FileName;
+                btnSave.IsEnabled = btnTweak.IsEnabled;
+            }
         }
 
         private void ChkOverwrite_Click(object sender, RoutedEventArgs e)
         {
             if (chkOverwrite.IsChecked.GetValueOrDefault())
             {
-                lblDestinationPath.IsEnabled = false;
-                tbDestinationPath.IsEnabled = false;
                 btnDestinationBrowse.IsEnabled = false;
                 tbDestinationPath.Text = tbSourcePath.Text;
+                btnSave.IsEnabled = btnTweak.IsEnabled;
             }
             else
             {
-                lblDestinationPath.IsEnabled = true;
-                tbDestinationPath.IsEnabled = true;
                 btnDestinationBrowse.IsEnabled = true;
                 tbDestinationPath.Text = string.Empty;
+                btnSave.IsEnabled = false;
             }
         }
+
+        private void BtnSave_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnTweak_Click(object sender, RoutedEventArgs e)
+        {
+            // Configure Formatting
+
+            // Configure Sorting
+
+            // Perform Work
+
+            // Display Results
+        }
+
+        #endregion Events
+
+
     }
 }
