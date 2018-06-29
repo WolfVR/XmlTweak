@@ -31,6 +31,7 @@ namespace XmlTweak
         private XDocument _xdoc;
         private FoldingManager _foldingManager;
         private readonly XmlFoldingStrategy _foldingStrategy = new XmlFoldingStrategy();
+        private string _tweakString;
 
 
         public MainWindow()
@@ -58,7 +59,7 @@ namespace XmlTweak
                 {
                     try
                     {
-                        _xdoc = XDocument.Load(((OpenFileDialog)ofd).FileName, LoadOptions.PreserveWhitespace);
+                        _xdoc = XDocument.Load(((OpenFileDialog)ofd).FileName, LoadOptions.None);
                         args.Cancel = false;
                     }
                     catch
@@ -87,7 +88,6 @@ namespace XmlTweak
             tbDisplayHighlight.Text = File.ReadAllText(tbSourcePath.Text);
 
             btnTweak.IsEnabled = true;
-            btnSave.IsEnabled = !string.IsNullOrWhiteSpace(tbDestinationPath.Text);
         }
 
         private void BtnDestinationBrowse_Click(object sender, RoutedEventArgs e)
@@ -95,11 +95,10 @@ namespace XmlTweak
             if (_saveFileDialogInstance == null)
                 _saveFileDialogInstance = new SaveFileDialog();
 
-            if (_saveFileDialogInstance.ShowDialog().GetValueOrDefault())
-            {
-                tbDestinationPath.Text = _saveFileDialogInstance.FileName;
-                btnSave.IsEnabled = btnTweak.IsEnabled;
-            }
+            if (!_saveFileDialogInstance.ShowDialog().GetValueOrDefault()) return;
+
+            tbDestinationPath.Text = _saveFileDialogInstance.FileName;
+            btnSave.IsEnabled = !string.IsNullOrWhiteSpace(_tweakString);
         }
 
         private void ChkOverwrite_Click(object sender, RoutedEventArgs e)
@@ -108,7 +107,7 @@ namespace XmlTweak
             {
                 btnDestinationBrowse.IsEnabled = false;
                 tbDestinationPath.Text = tbSourcePath.Text;
-                btnSave.IsEnabled = btnTweak.IsEnabled;
+                btnSave.IsEnabled = !string.IsNullOrWhiteSpace(_tweakString);
             }
             else
             {
@@ -120,22 +119,77 @@ namespace XmlTweak
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-
+            File.WriteAllText(tbDestinationPath.Text,_tweakString);
         }
 
         private void BtnTweak_Click(object sender, RoutedEventArgs e)
         {
-            // Configure Formatting
-
             // Configure Sorting
 
             // Perform Work
+            if(chkRemoveEmptyNode.IsChecked.GetValueOrDefault())
+                RemoveEmptyElement(_xdoc.Root);
 
-            // Display Results
+            if (chkSortElement.IsChecked.GetValueOrDefault() || chkSortValue.IsChecked.GetValueOrDefault())
+                SortElement(_xdoc.Root);
+
+            DisplayResults();
         }
 
         #endregion Events
 
+        #region Helpers
 
+        private static void RemoveEmptyElement(XElement xElement)
+        {
+            xElement.Elements().Where(xe => xe.IsEmpty && !xe.HasAttributes).Remove();
+            foreach (var childElement in xElement.Elements().Where(xe => xe.HasElements))
+            {
+                RemoveEmptyElement(childElement);
+            }
+        }
+
+        private static void SortElement(XElement xElement)
+        {
+            // Check that this element has child elements before trying to sort them
+            if (xElement.HasElements)
+            {
+                xElement.ReplaceNodes(xElement.Elements().OrderBy(ob => ob.Name.LocalName));
+
+                foreach (var childElement in xElement.Elements())
+                {
+                    SortElement(childElement);
+                }
+            }
+        }
+
+        private void DisplayResults()
+        {
+            var xWriterSettings = new XmlWriterSettings()
+            {
+                Encoding = new UTF8Encoding(false),
+                Indent = true,
+                IndentChars = "   ", // 3 spaces instead of the default 2
+                NewLineHandling = NewLineHandling.Replace,
+                NewLineOnAttributes = chkAttibuteNewLine.IsChecked.GetValueOrDefault(),
+                OmitXmlDeclaration = false,
+                WriteEndDocumentOnClose = true
+            };
+
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var xWriter = XmlWriter.Create(memoryStream, xWriterSettings))
+                {
+                    _xdoc.Save(xWriter);
+                }
+
+                _tweakString = Encoding.UTF8.GetString(memoryStream.ToArray());
+            }
+
+            tbDisplayHighlight.Text = _tweakString;
+            btnSave.IsEnabled = !string.IsNullOrWhiteSpace(tbDestinationPath.Text);
+        }
+
+        #endregion Helpers
     }
 }
