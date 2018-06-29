@@ -30,7 +30,7 @@ namespace XmlTweak
         private SaveFileDialog _saveFileDialogInstance;
         private XDocument _xdoc;
         private FoldingManager _foldingManager;
-        private readonly XmlFoldingStrategy _foldingStrategy = new XmlFoldingStrategy();
+        private readonly XmlFoldingStrategy _foldingStrategy = new XmlFoldingStrategy {ShowAttributesWhenFolded = true};
         private string _tweakString;
 
 
@@ -40,6 +40,7 @@ namespace XmlTweak
         }
 
         #region Events
+
         private void TbDisplayHighlight_Loaded(object sender, RoutedEventArgs e)
         {
             _foldingManager = FoldingManager.Install(tbDisplayHighlight.TextArea);
@@ -79,15 +80,19 @@ namespace XmlTweak
 
 
             // Get the attributes in the document and populate the combo box to use for sorting.
-            var attributes = new HashSet<string>(_xdoc.Descendants().Attributes()
-                .Where(xa => !xa.IsNamespaceDeclaration).Select(xa => xa.Name.LocalName)).ToList();
-            attributes.Sort();
-            cbAttributes.ItemsSource = attributes;
+            cbAttributes.ItemsSource = new HashSet<XName>(
+                _xdoc.Descendants().Attributes()
+                    .Where(xa => !xa.IsNamespaceDeclaration)
+                    .OrderBy(ob => ob.Name.LocalName)
+                    .Select(xa => xa.Name)
+                ).ToList();
 
             // Load the raw file into the syntax highlighter for display
             tbDisplayHighlight.Text = File.ReadAllText(tbSourcePath.Text);
 
             btnTweak.IsEnabled = true;
+            gbSort.IsEnabled = true;
+            gbFormat.IsEnabled = true;
         }
 
         private void BtnDestinationBrowse_Click(object sender, RoutedEventArgs e)
@@ -117,6 +122,25 @@ namespace XmlTweak
             }
         }
 
+        private void chkSortValue_Click(object sender, RoutedEventArgs e)
+        {
+            if (chkSortValue.IsChecked.GetValueOrDefault())
+            {
+                chkSortElement.IsChecked = true;
+                chkSortElement.IsEnabled = false;
+            }
+            else
+            {
+                chkSortElement.IsEnabled = true;
+            }
+        }
+
+        private void cbAttributes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            chkSortValue.IsChecked = true;
+            chkSortValue_Click(null, null);
+        }
+
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             File.WriteAllText(tbDestinationPath.Text,_tweakString);
@@ -124,13 +148,18 @@ namespace XmlTweak
 
         private void BtnTweak_Click(object sender, RoutedEventArgs e)
         {
-            // Configure Sorting
+            if (chkSortValue.IsChecked.GetValueOrDefault() && cbAttributes.SelectedIndex == -1)
+            {
+                MessageBox.Show("Please select an attribute to use for sorting.");
+                return;
+            }
 
-            // Perform Work
-            if(chkRemoveEmptyNode.IsChecked.GetValueOrDefault())
+            if(chkRemoveEmptyElement.IsChecked.GetValueOrDefault())
                 RemoveEmptyElement(_xdoc.Root);
 
-            if (chkSortElement.IsChecked.GetValueOrDefault() || chkSortValue.IsChecked.GetValueOrDefault())
+            if (chkSortElement.IsChecked.GetValueOrDefault()
+                || chkSortAttribute.IsChecked.GetValueOrDefault()
+                || chkSortValue.IsChecked.GetValueOrDefault())
                 SortElement(_xdoc.Root);
 
             DisplayResults();
@@ -140,7 +169,7 @@ namespace XmlTweak
 
         #region Helpers
 
-        private static void RemoveEmptyElement(XElement xElement)
+        private static void RemoveEmptyElement(XContainer xElement)
         {
             xElement.Elements().Where(xe => xe.IsEmpty && !xe.HasAttributes).Remove();
             foreach (var childElement in xElement.Elements().Where(xe => xe.HasElements))
@@ -149,24 +178,35 @@ namespace XmlTweak
             }
         }
 
-        private static void SortElement(XElement xElement)
+        private void SortElement(XElement xElement)
         {
-            // Check that this element has child elements before trying to sort them
-            if (xElement.HasElements)
+            // Sort Attributes if desired
+            if (chkSortAttribute.IsChecked.GetValueOrDefault() && xElement.HasAttributes)
             {
-                xElement.ReplaceNodes(xElement.Elements().OrderBy(ob => ob.Name.LocalName));
-
-                foreach (var childElement in xElement.Elements())
-                {
-                    SortElement(childElement);
-                }
+                xElement.ReplaceAttributes(xElement.Attributes().Where(x => x.IsNamespaceDeclaration),
+                    xElement.Attributes().Where(x => !x.IsNamespaceDeclaration).OrderBy(ob => ob.Name.LocalName));
             }
+
+            // If no child elements, or no additional sorting requested, then return
+            if (!xElement.HasElements || (!chkSortElement.IsChecked.GetValueOrDefault() &&
+                                          !chkSortValue.IsChecked.GetValueOrDefault())) return;
+
+
+            xElement.ReplaceNodes(xElement.Elements().OrderBy(ob => ob.Name.LocalName)
+                .ThenBy(ob => ob.Attribute(cbAttributes.SelectedItem as XName)?.Value));
+
+            foreach (var childElement in xElement.Elements())
+            {
+                SortElement(childElement);
+            }
+
         }
 
         private void DisplayResults()
         {
             var xWriterSettings = new XmlWriterSettings()
             {
+                CloseOutput = false,
                 Encoding = new UTF8Encoding(false),
                 Indent = true,
                 IndentChars = "   ", // 3 spaces instead of the default 2

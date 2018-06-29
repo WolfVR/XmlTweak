@@ -23,18 +23,18 @@
                 <Button x:Name="btnDestinationBrowse" Content="..." HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Bottom" Width="35" FontSize="20" FontWeight="Bold" VerticalContentAlignment="Center" Padding="1,-10,1,1" Grid.IsSharedSizeScope="True" Height="23" Click="BtnDestinationBrowse_Click"/>
             </Grid>
         </GroupBox>
-        <GroupBox x:Name="gbSort" Header="Sort Options" Margin="10,156,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="300">
+        <GroupBox x:Name="gbSort" Header="Sort Options" Margin="10,156,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="300" IsEnabled="False">
             <Grid Margin="0">
                 <CheckBox x:Name="chkSortElement" Content="Sort Elements" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                 <CheckBox x:Name="chkSortAttribute" Content="Sort Attributes" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top"/>
-                <CheckBox x:Name="chkSortValue" Content="Sort By Attribute Value" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                <ComboBox x:Name="cbAttributes" HorizontalAlignment="Left" Margin="155,43,0,0" VerticalAlignment="Top" Width="125"/>
+                <CheckBox x:Name="chkSortValue" Content="Sort By Attribute Value" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Click="chkSortValue_Click"/>
+                <ComboBox x:Name="cbAttributes" HorizontalAlignment="Left" Margin="155,43,0,0" VerticalAlignment="Top" Width="125" SelectionChanged="cbAttributes_SelectionChanged"/>
             </Grid>
         </GroupBox>
-        <GroupBox x:Name="gbFormat" Header="Format Options" Height="88" Margin="317,156,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="180">
+        <GroupBox x:Name="gbFormat" Header="Format Options" Height="88" Margin="317,156,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="180" IsEnabled="False">
             <Grid>
                 <CheckBox x:Name="chkAttibuteNewLine" Content="New Line For Attributes" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                <CheckBox x:Name="chkRemoveEmptyNode" Content="Remove Empty Elements" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top"/>
+                <CheckBox x:Name="chkRemoveEmptyElement" Content="Remove Empty Elements" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="gbAction" Header="Actions" HorizontalAlignment="Left" Height="88" Margin="502,156,10,0" VerticalAlignment="Top" Width="110">
