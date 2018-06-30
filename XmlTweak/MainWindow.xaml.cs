@@ -3,35 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml;
 using System.Xml.Linq;
-using System.Xml.XPath;
 using ICSharpCode.AvalonEdit.Folding;
 using Microsoft.Win32;
 
 namespace XmlTweak
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly XmlFoldingStrategy _foldingStrategy = new XmlFoldingStrategy {ShowAttributesWhenFolded = true};
+        private FoldingManager _foldingManager;
         private OpenFileDialog _openFileDialogInstance;
         private SaveFileDialog _saveFileDialogInstance;
-        private XDocument _xdoc;
-        private FoldingManager _foldingManager;
-        private readonly XmlFoldingStrategy _foldingStrategy = new XmlFoldingStrategy {ShowAttributesWhenFolded = true};
         private string _tweakString;
+        private XDocument _xdoc;
 
 
         public MainWindow()
@@ -60,7 +51,7 @@ namespace XmlTweak
                 {
                     try
                     {
-                        _xdoc = XDocument.Load(((OpenFileDialog)ofd).FileName, LoadOptions.None);
+                        _xdoc = XDocument.Load(((OpenFileDialog) ofd).FileName, LoadOptions.None);
                         args.Cancel = false;
                     }
                     catch
@@ -85,7 +76,7 @@ namespace XmlTweak
                     .Where(xa => !xa.IsNamespaceDeclaration)
                     .OrderBy(ob => ob.Name.LocalName)
                     .Select(xa => xa.Name)
-                ).ToList();
+            ).ToList();
 
             // Load the raw file into the syntax highlighter for display
             tbDisplayHighlight.Text = File.ReadAllText(tbSourcePath.Text);
@@ -143,7 +134,7 @@ namespace XmlTweak
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            File.WriteAllText(tbDestinationPath.Text,_tweakString);
+            File.WriteAllText(tbDestinationPath.Text, _tweakString);
         }
 
         private void BtnTweak_Click(object sender, RoutedEventArgs e)
@@ -154,7 +145,7 @@ namespace XmlTweak
                 return;
             }
 
-            if(chkRemoveEmptyElement.IsChecked.GetValueOrDefault())
+            if (chkRemoveEmptyElement.IsChecked.GetValueOrDefault())
                 RemoveEmptyElement(_xdoc.Root);
 
             if (chkSortElement.IsChecked.GetValueOrDefault()
@@ -173,38 +164,30 @@ namespace XmlTweak
         {
             xElement.Elements().Where(xe => xe.IsEmpty && !xe.HasAttributes).Remove();
             foreach (var childElement in xElement.Elements().Where(xe => xe.HasElements))
-            {
                 RemoveEmptyElement(childElement);
-            }
         }
 
         private void SortElement(XElement xElement)
         {
             // Sort Attributes if desired
             if (chkSortAttribute.IsChecked.GetValueOrDefault() && xElement.HasAttributes)
-            {
                 xElement.ReplaceAttributes(xElement.Attributes().Where(x => x.IsNamespaceDeclaration),
                     xElement.Attributes().Where(x => !x.IsNamespaceDeclaration).OrderBy(ob => ob.Name.LocalName));
-            }
 
             // If no child elements, or no additional sorting requested, then return
-            if (!xElement.HasElements || (!chkSortElement.IsChecked.GetValueOrDefault() &&
-                                          !chkSortValue.IsChecked.GetValueOrDefault())) return;
+            if (!xElement.HasElements || !chkSortElement.IsChecked.GetValueOrDefault() &&
+                !chkSortValue.IsChecked.GetValueOrDefault()) return;
 
 
             xElement.ReplaceNodes(xElement.Elements().OrderBy(ob => ob.Name.LocalName)
                 .ThenBy(ob => ob.Attribute(cbAttributes.SelectedItem as XName)?.Value));
 
-            foreach (var childElement in xElement.Elements())
-            {
-                SortElement(childElement);
-            }
-
+            foreach (var childElement in xElement.Elements()) SortElement(childElement);
         }
 
         private void DisplayResults()
         {
-            var xWriterSettings = new XmlWriterSettings()
+            var xWriterSettings = new XmlWriterSettings
             {
                 CloseOutput = false,
                 Encoding = new UTF8Encoding(false),
