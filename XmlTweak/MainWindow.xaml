@@ -6,7 +6,7 @@
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:local="clr-namespace:XmlTweak"
         mc:Ignorable="d"
-        Title="XML Tweak" Height="700" WindowStartupLocation="CenterScreen" MinWidth="638" MinHeight="700" Margin="0" Width="638">
+        Title="XML Tweak" WindowStartupLocation="CenterScreen" MinWidth="638" MinHeight="700" Margin="0" Width="638" Height="700">
     <Grid>
         <GroupBox x:Name="gbSource" Header="Source XML" Margin="10,10,10,0" Height="61" VerticalAlignment="Top" HorizontalAlignment="Left" Width="602">
             <Grid>
@@ -25,10 +25,10 @@
         </GroupBox>
         <GroupBox x:Name="gbSort" Header="Sort Options" Margin="10,156,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="300" IsEnabled="False">
             <Grid Margin="0">
-                <CheckBox x:Name="chkSortElement" Content="Sort Elements" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                <CheckBox x:Name="chkSortSubElement" Content="Sort Sub Elements" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
                 <CheckBox x:Name="chkSortAttribute" Content="Sort Attributes" HorizontalAlignment="Left" Margin="10,30,0,0" VerticalAlignment="Top"/>
-                <CheckBox x:Name="chkSortValue" Content="Sort By Attribute Value" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top" Click="chkSortValue_Click"/>
-                <ComboBox x:Name="cbAttributes" HorizontalAlignment="Left" Margin="155,43,0,0" VerticalAlignment="Top" Width="125" SelectionChanged="cbAttributes_SelectionChanged"/>
+                <CheckBox x:Name="chkSortValue" Content="Sort By Attribute Value" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="ChkSortValue_Click"/>
+                <ComboBox x:Name="cbAttributes" HorizontalAlignment="Left" Margin="155,3,0,0" VerticalAlignment="Top" Width="125" SelectionChanged="cbAttributes_SelectionChanged"/>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="gbFormat" Header="Format Options" Height="88" Margin="317,156,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="180" IsEnabled="False">
@@ -43,10 +43,13 @@
                 <Button x:Name="btnSave" Content="Save" HorizontalAlignment="Center" Margin="10,36,10,0" VerticalAlignment="Top" Width="75" IsEnabled="False" Click="BtnSave_Click"/>
             </Grid>
         </GroupBox>
-        <GroupBox x:Name="gbDisplay" Header="Preview" Margin="10,249,10,10">
+        <GroupBox x:Name="gbDisplay" Header="Preview" Margin="10,249,10,27">
             <Grid Margin="0">
                 <avalonedit:TextEditor SyntaxHighlighting="XML" x:Name="tbDisplayHighlight" Margin="0" FontSize="14" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Loaded="TbDisplayHighlight_Loaded" TextChanged="TbDisplayHighlight_TextChanged" FontFamily="Consolas"/>
             </Grid>
         </GroupBox>
+        <StatusBar VerticalAlignment="Bottom" FlowDirection="RightToLeft" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+            <Label x:Name="lblStatus" Content="" Padding="1,0" VerticalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalContentAlignment="Center" FlowDirection="LeftToRight" Margin="10,0,0,0"/>
+        </StatusBar>
     </Grid>
 </Window>

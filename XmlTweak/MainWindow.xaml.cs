@@ -80,7 +80,7 @@ namespace XmlTweak
 
             // Load the raw file into the syntax highlighter for display
             tbDisplayHighlight.Text = File.ReadAllText(tbSourcePath.Text);
-
+            lblStatus.Content = "XML Loaded";
             btnTweak.IsEnabled = true;
             gbSort.IsEnabled = true;
             gbFormat.IsEnabled = true;
@@ -113,28 +113,30 @@ namespace XmlTweak
             }
         }
 
-        private void chkSortValue_Click(object sender, RoutedEventArgs e)
+        private void ChkSortValue_Click(object sender, RoutedEventArgs e)
         {
-            if (chkSortValue.IsChecked.GetValueOrDefault())
-            {
-                chkSortElement.IsChecked = true;
-                chkSortElement.IsEnabled = false;
-            }
-            else
-            {
-                chkSortElement.IsEnabled = true;
-            }
+            //if (chkSortValue.IsChecked.GetValueOrDefault())
+            //{
+            //    chkSortSubElement.IsChecked = true;
+            //    chkSortSubElement.IsEnabled = false;
+            //}
+            //else
+            //{
+            //    chkSortSubElement.IsEnabled = true;
+            //}
         }
 
         private void cbAttributes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             chkSortValue.IsChecked = true;
-            chkSortValue_Click(null, null);
+            ChkSortValue_Click(null, null);
         }
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             File.WriteAllText(tbDestinationPath.Text, _tweakString);
+            lblStatus.Content = "Save Complete";
+            btnSave.IsEnabled = false;
         }
 
         private void BtnTweak_Click(object sender, RoutedEventArgs e)
@@ -148,12 +150,12 @@ namespace XmlTweak
             if (chkRemoveEmptyElement.IsChecked.GetValueOrDefault())
                 RemoveEmptyElement(_xdoc.Root);
 
-            if (chkSortElement.IsChecked.GetValueOrDefault()
-                || chkSortAttribute.IsChecked.GetValueOrDefault()
+            if (chkSortAttribute.IsChecked.GetValueOrDefault()
                 || chkSortValue.IsChecked.GetValueOrDefault())
                 SortElement(_xdoc.Root);
 
             DisplayResults();
+            lblStatus.Content = "XML has been tweaked!";
         }
 
         #endregion Events
@@ -175,13 +177,14 @@ namespace XmlTweak
                     xElement.Attributes().Where(x => !x.IsNamespaceDeclaration).OrderBy(ob => ob.Name.LocalName));
 
             // If no child elements, or no additional sorting requested, then return
-            if (!xElement.HasElements || !chkSortElement.IsChecked.GetValueOrDefault() &&
-                !chkSortValue.IsChecked.GetValueOrDefault()) return;
+            if (!xElement.HasElements || (!chkSortSubElement.IsChecked.GetValueOrDefault() &&
+                !chkSortValue.IsChecked.GetValueOrDefault())) return;
 
 
             xElement.ReplaceNodes(xElement.Elements().OrderBy(ob => ob.Name.LocalName)
                 .ThenBy(ob => ob.Attribute(cbAttributes.SelectedItem as XName)?.Value));
 
+            if (!chkSortSubElement.IsChecked.GetValueOrDefault()) return;
             foreach (var childElement in xElement.Elements()) SortElement(childElement);
         }
 
@@ -192,7 +195,7 @@ namespace XmlTweak
                 CloseOutput = false,
                 Encoding = new UTF8Encoding(false),
                 Indent = true,
-                IndentChars = "   ", // 3 spaces instead of the default 2
+                //IndentChars = "   ", // 3 spaces instead of the default 2
                 NewLineHandling = NewLineHandling.Replace,
                 NewLineOnAttributes = chkAttibuteNewLine.IsChecked.GetValueOrDefault(),
                 OmitXmlDeclaration = false,
@@ -209,6 +212,8 @@ namespace XmlTweak
                 _tweakString = Encoding.UTF8.GetString(memoryStream.ToArray());
             }
 
+            // Remove extra space before closing shortcut introduced by the xWriter " />" => "/>"
+            _tweakString = _tweakString.Replace(" />", "/>");
             tbDisplayHighlight.Text = _tweakString;
             btnSave.IsEnabled = !string.IsNullOrWhiteSpace(tbDestinationPath.Text);
         }
